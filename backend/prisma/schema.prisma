@@ -1,0 +1,301 @@
+// HotspotX — Multi-tenant WiFi hotspot management SaaS (Tanzania)
+// Prisma schema. Postgres 17. UUID PKs, timestamps on every model.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────
+
+enum PackageTier {
+  starter
+  basic
+  pro
+}
+
+enum OperatorStatus {
+  pending
+  active
+  blocked
+}
+
+enum DeviceType {
+  omada
+  mikrotik
+}
+
+enum APStatus {
+  online
+  offline
+}
+
+enum PackageStatus {
+  active
+  inactive
+}
+
+enum DurationUnit {
+  minutes
+  hours
+  days
+}
+
+enum VoucherStatus {
+  unused
+  used
+}
+
+enum PaymentMethod {
+  mpesa
+  tigopesa
+  airtel
+  voucher
+}
+
+enum TransactionStatus {
+  pending
+  success
+  failed
+}
+
+enum SessionStatus {
+  active
+  expired
+}
+
+enum NotificationType {
+  info
+  success
+  warning
+  error
+}
+
+// ─────────────────────────────────────────────────────────────
+// Models
+// ─────────────────────────────────────────────────────────────
+
+model Operator {
+  id                 String         @id @default(uuid())
+  name               String
+  businessName       String
+  email              String         @unique
+  password           String // bcrypt hash
+  phone              String
+  mpesa              String? // payout / mobile money number
+  region             String?
+  package            PackageTier    @default(starter)
+  status             OperatorStatus @default(pending)
+  deviceType         DeviceType     @default(omada)
+  operatorId         String         @unique // public id, format HSX-YYYY-XXXX
+  commissionRate     Int            @default(10) // admin % on mobile money
+  voucherCommission  Int            @default(3) // admin % on vouchers
+  noSubscription     Boolean        @default(false) // mikrotik => true, always pro/free
+  subscriptionEnd    DateTime?
+  onboardingComplete Boolean        @default(false)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  sites          Site[]
+  accessPoints   AccessPoint[]
+  packages       Package[]
+  vouchers       Voucher[]
+  transactions   Transaction[]
+  sessions       Session[]
+  notifications  Notification[]
+  wallet         Wallet?
+  portalSettings PortalSettings?
+
+  @@index([status])
+  @@index([deviceType])
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String // bcrypt hash
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Site {
+  id         String   @id @default(uuid())
+  name       String
+  city       String?
+  siteId     String? // Omada site ID
+  omadaEmail String?
+  operatorId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  operator     Operator      @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  accessPoints AccessPoint[]
+  packages     Package[]
+
+  @@index([operatorId])
+}
+
+model AccessPoint {
+  id         String     @id @default(uuid())
+  name       String
+  macAddress String     @unique
+  ipAddress  String?
+  ssid       String?
+  model      String?
+  status     APStatus   @default(offline)
+  deviceType DeviceType @default(omada)
+  siteId     String
+  operatorId String
+
+  // MikroTik-specific connection details
+  mikrotikIp   String?
+  mikrotikUser String?
+  mikrotikPass String?
+  mikrotikPort Int     @default(8728)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  site     Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@index([siteId])
+}
+
+model Package {
+  id           String        @id @default(uuid())
+  name         String // e.g. "Saa 2"
+  duration     Int
+  durationUnit DurationUnit  @default(hours)
+  speed        Int // Mbps
+  price        Int // TZS
+  status       PackageStatus @default(active)
+  operatorId   String
+  siteId       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  site     Site?    @relation(fields: [siteId], references: [id], onDelete: SetNull)
+
+  @@index([operatorId])
+  @@index([siteId])
+}
+
+model Voucher {
+  id           String        @id @default(uuid())
+  code         String        @unique // format XXXX-XXXX-XXXX
+  title        String?
+  duration     Int
+  durationUnit DurationUnit  @default(hours)
+  speed        Int
+  price        Int
+  status       VoucherStatus @default(unused)
+  usedBy       String? // client MAC
+  usedAt       DateTime?
+  operatorId   String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@index([status])
+  @@index([title])
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  amount          Int
+  method          PaymentMethod
+  adminCommission Int
+  operatorEarning Int
+  clientMac       String?
+  apMac           String?
+  siteId          String?
+  duration        Int?
+  status          TransactionStatus @default(pending)
+  reference       String? // payment gateway ref
+  operatorId      String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@index([status])
+  @@index([reference])
+}
+
+model Wallet {
+  id             String   @id @default(uuid())
+  balance        Int      @default(0)
+  totalEarned    Int      @default(0)
+  totalWithdrawn Int      @default(0)
+  operatorId     String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id         String        @id @default(uuid())
+  clientMac  String
+  apMac      String
+  startTime  DateTime      @default(now())
+  endTime    DateTime?
+  status     SessionStatus @default(active)
+  packageId  String?
+  amount     Int?
+  speed      Int?
+  operatorId String
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+  @@index([status])
+  @@index([clientMac])
+}
+
+model PortalSettings {
+  id             String   @id @default(uuid())
+  operatorId     String   @unique
+  primaryColor   String   @default("#FF8C42")
+  secondaryColor String   @default("#1a1f2e")
+  logoEmoji      String   @default("🐆")
+  businessName   String?
+  subtitle       String?
+  footer         String?
+  template       Int      @default(1) // 1 | 2 | 3
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  operator Operator @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id         String           @id @default(uuid())
+  title      String
+  message    String
+  type       NotificationType @default(info)
+  operatorId String? // null = broadcast to all operators
+  readBy     String[]         @default([]) // operator ids that have read it
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  operator Operator? @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+
+  @@index([operatorId])
+}
