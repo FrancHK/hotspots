@@ -45,6 +45,16 @@ export const env = {
     username: process.env.SMS_USERNAME ?? "",
     senderId: process.env.SMS_SENDER_ID ?? "HotspotX",
   },
+
+  network: {
+    // When true, network adapters short-circuit and report success without
+    // contacting any real Omada controller / MikroTik router. Defaults on
+    // outside production so the captive-portal flow is testable locally.
+    simulate:
+      process.env.NETWORK_SIMULATE !== undefined
+        ? process.env.NETWORK_SIMULATE === "true"
+        : process.env.NODE_ENV !== "production",
+  },
 } as const;
 
 export const isProd = env.nodeEnv === "production";
