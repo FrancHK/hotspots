@@ -49,6 +49,47 @@ export const listOperators = asyncHandler(async (req: Request, res: Response) =>
   res.json({ success: true, count: operators.length, operators });
 });
 
+// ── GET /api/operators/:id  (admin) ──────────────────────
+export const getOperator = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params as { id: string };
+
+  const operator = await prisma.operator.findUnique({
+    where: { id },
+    select: {
+      ...operatorPublicSelect,
+      wallet: {
+        select: { balance: true, totalEarned: true, totalWithdrawn: true },
+      },
+      sites: { select: { id: true, name: true, city: true, siteId: true } },
+      accessPoints: {
+        select: {
+          id: true,
+          name: true,
+          macAddress: true,
+          status: true,
+          deviceType: true,
+        },
+      },
+      packages: {
+        select: { id: true, name: true, price: true, status: true },
+      },
+      _count: {
+        select: {
+          sites: true,
+          accessPoints: true,
+          packages: true,
+          vouchers: true,
+          transactions: true,
+        },
+      },
+    },
+  });
+
+  if (!operator) throw new AppError(404, "Operator not found");
+
+  res.json({ success: true, operator });
+});
+
 // ── POST /api/operators  (admin creates an operator) ─────
 const createSchema = z.object({
   name: z.string().trim().min(2),
@@ -144,6 +185,29 @@ export const updateOperatorStatus = asyncHandler(
       success: true,
       message: `Operator status changed to ${next}`,
       operator: updated,
+    });
+  },
+);
+
+// ── DELETE /api/operators/:id  (admin) ───────────────────
+// Removes the operator and all related records (sites, APs, packages,
+// vouchers, transactions, wallet, sessions, portal settings) via the
+// onDelete: Cascade rules in the schema.
+export const deleteOperator = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params as { id: string };
+
+    const operator = await prisma.operator.findUnique({
+      where: { id },
+      select: { id: true, businessName: true, operatorId: true },
+    });
+    if (!operator) throw new AppError(404, "Operator not found");
+
+    await prisma.operator.delete({ where: { id } });
+
+    res.json({
+      success: true,
+      message: `Operator ${operator.businessName} (${operator.operatorId}) deleted`,
     });
   },
 );
