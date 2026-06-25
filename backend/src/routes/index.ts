@@ -6,6 +6,8 @@ import voucherRoutes from "./voucherRoutes.js";
 import hotspotRoutes from "./hotspotRoutes.js";
 import walletRoutes from "./walletRoutes.js";
 import paymentsRoutes from "./paymentsRoutes.js";
+import notificationRoutes from "./notificationRoutes.js";
+import portalSettingsRoutes from "./portalSettingsRoutes.js";
 
 const router = Router();
 
@@ -16,7 +18,9 @@ router.use("/vouchers", voucherRoutes);
 router.use("/hotspot", hotspotRoutes);
 router.use("/wallet", walletRoutes);
 router.use("/payments", paymentsRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/portal-settings", portalSettingsRoutes);
 
-// Future route groups (notifications, portal-settings, onboarding) mount here.
+// Future route groups (onboarding) mount here.
 
 export default router;
