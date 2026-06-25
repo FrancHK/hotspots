@@ -30,7 +30,7 @@ export function SiteHeader() {
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3.5">
         <Brand withTagline size="md" light={!scrolled} />
         <nav className="flex items-center gap-2 sm:gap-3">
-          <ThemeToggle />
+          <ThemeToggle light={!scrolled} />
           <Link
             href="/login"
             className={cn(

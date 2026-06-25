@@ -5,21 +5,21 @@ import { PortalMockup } from "./PortalMockup";
 
 export function Hero() {
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* Ambient world-map background, dimmed */}
+    <section className="relative isolate flex min-h-screen items-center overflow-hidden">
+      {/* Ambient world-map background, fills the screen */}
       <Image
         src="/landimg.png"
         alt=""
         fill
         priority
         sizes="100vw"
-        className="object-cover"
+        className="-z-10 object-cover"
       />
       <div className="absolute inset-0 -z-[1] bg-gradient-to-b from-[#0b1020]/85 via-[#0b1020]/75 to-[#0b1020]/95" />
       {/* Soft orange glow to tie the brand in */}
       <div className="pointer-events-none absolute -left-32 top-1/3 -z-[1] h-96 w-96 rounded-full bg-brand/20 blur-3xl arc-pulse" />
 
-      <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-6 pb-20 pt-32 md:grid-cols-[1.05fr_0.95fr] md:pb-28 md:pt-36">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-12 px-6 pb-20 pt-32 md:grid-cols-[1.05fr_0.95fr] md:pb-28 md:pt-36">
         {/* Left: message */}
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold text-white/80">
