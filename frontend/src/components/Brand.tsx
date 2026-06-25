@@ -25,7 +25,7 @@ export function Brand({ withTagline, size = "md", href = "/", light }: BrandProp
       <span className="flex flex-col leading-tight">
         <span
           className={cn(
-            "font-extrabold",
+            "font-display font-extrabold",
             light ? "text-white" : "text-content",
             nameSizes[size],
           )}
