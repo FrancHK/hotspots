@@ -5,6 +5,7 @@ import packageRoutes from "./packageRoutes.js";
 import voucherRoutes from "./voucherRoutes.js";
 import hotspotRoutes from "./hotspotRoutes.js";
 import walletRoutes from "./walletRoutes.js";
+import paymentsRoutes from "./paymentsRoutes.js";
 
 const router = Router();
 
@@ -14,8 +15,8 @@ router.use("/packages", packageRoutes);
 router.use("/vouchers", voucherRoutes);
 router.use("/hotspot", hotspotRoutes);
 router.use("/wallet", walletRoutes);
+router.use("/payments", paymentsRoutes);
 
-// Future route groups (payments, notifications, portal-settings,
-// onboarding) mount here.
+// Future route groups (notifications, portal-settings, onboarding) mount here.
 
 export default router;

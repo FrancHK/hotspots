@@ -12,6 +12,12 @@ app.use(
     credentials: true,
   }),
 );
+
+// The Snippe webhook needs the RAW body for HMAC verification, so capture it
+// as a Buffer BEFORE the JSON parser runs (body-parser skips already-read
+// bodies, so express.json() below won't touch this route).
+app.use("/api/payments/webhook", express.raw({ type: "*/*" }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
