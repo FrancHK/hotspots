@@ -23,7 +23,14 @@ export function Hero() {
         {/* Left: message */}
         <div>
           <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-semibold text-white/80">
-            🐆 Haraka · Nguvu · Imara
+            <Image
+              src="/logo.png"
+              alt=""
+              width={18}
+              height={18}
+              className="h-[18px] w-[18px] rounded-md bg-white object-contain p-px"
+            />
+            Haraka · Nguvu · Imara
           </span>
           <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl md:text-6xl">
             Geuza <span className="text-brand">WiFi</span> yako

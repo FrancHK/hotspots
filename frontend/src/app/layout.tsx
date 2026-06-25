@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Bricolage_Grotesque } from "next/font/google";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import "./globals.css";
 import { ThemeProvider, themeScript } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/ui/Toast";

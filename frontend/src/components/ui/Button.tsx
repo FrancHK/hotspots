@@ -3,7 +3,7 @@
 import { type ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/cn";
 
-type Variant = "brand" | "neutral" | "ghost";
+type Variant = "brand" | "neutral" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -30,7 +30,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ? "neu-brand"
         : variant === "neutral"
           ? "neu-press text-content"
-          : "text-muted hover:text-content";
+          : variant === "danger"
+            ? "neu-press text-red-500"
+            : "text-muted hover:text-content";
 
     return (
       <button

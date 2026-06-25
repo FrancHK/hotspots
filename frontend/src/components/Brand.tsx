@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/cn";
 
 interface BrandProps {
@@ -8,7 +9,7 @@ interface BrandProps {
   light?: boolean; // force white text (e.g. over a dark hero image)
 }
 
-const logoSizes = { sm: "h-9 w-9 text-xl", md: "h-11 w-11 text-2xl", lg: "h-16 w-16 text-4xl" };
+const logoSizes = { sm: "h-9 w-9", md: "h-11 w-11", lg: "h-16 w-16" };
 const nameSizes = { sm: "text-lg", md: "text-xl", lg: "text-3xl" };
 
 export function Brand({ withTagline, size = "md", href = "/", light }: BrandProps) {
@@ -16,11 +17,18 @@ export function Brand({ withTagline, size = "md", href = "/", light }: BrandProp
     <Link href={href} className="inline-flex items-center gap-3">
       <span
         className={cn(
-          "flex items-center justify-center rounded-2xl neu-brand",
+          "relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white neu-sm",
           logoSizes[size],
         )}
       >
-        🐆
+        <Image
+          src="/logo.png"
+          alt="HotspotX"
+          fill
+          sizes="64px"
+          priority
+          className="object-contain p-1"
+        />
       </span>
       <span className="flex flex-col leading-tight">
         <span
