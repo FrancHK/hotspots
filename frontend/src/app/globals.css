@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (toggled by adding `.dark` on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Design tokens ──────────────────────────────────────── */
+:root {
+  /* Brand */
+  --brand: #ff8c42;
+  --brand-dark: #e6762f;
+  --navy: #1a1f2e;
+
+  /* Light-mode surfaces (soft grey for neumorphism) */
+  --bg: #e8ecf3;
+  --surface: #e8ecf3;
+  --text: #1a1f2e;
+  --muted: #5b6472;
+  --border: #d4dae4;
+  --shadow-light: #ffffff;
+  --shadow-dark: #c4ccd9;
+}
+
+.dark {
+  --bg: #1a1f2e;
+  --surface: #1f2538;
+  --text: #eef2f9;
+  --muted: #95a0b4;
+  --border: #2a3147;
+  --shadow-light: #262d44;
+  --shadow-dark: #12151f;
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-navy: var(--navy);
+  --color-app: var(--bg);
+  --color-surface: var(--surface);
+  --color-content: var(--text);
+  --color-muted: var(--muted);
+  --color-line: var(--border);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* ── Neumorphism utilities ──────────────────────────────── */
+@layer components {
+  .neu {
+    background: var(--surface);
+    box-shadow: 6px 6px 14px var(--shadow-dark),
+      -6px -6px 14px var(--shadow-light);
+  }
+  .neu-sm {
+    background: var(--surface);
+    box-shadow: 4px 4px 8px var(--shadow-dark),
+      -4px -4px 8px var(--shadow-light);
+  }
+  .neu-inset {
+    background: var(--surface);
+    box-shadow: inset 4px 4px 8px var(--shadow-dark),
+      inset -4px -4px 8px var(--shadow-light);
+  }
+  /* Pressable: raised by default, inset when active. */
+  .neu-press {
+    background: var(--surface);
+    box-shadow: 5px 5px 10px var(--shadow-dark),
+      -5px -5px 10px var(--shadow-light);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .neu-press:hover {
+    box-shadow: 6px 6px 12px var(--shadow-dark),
+      -6px -6px 12px var(--shadow-light);
+  }
+  .neu-press:active {
+    box-shadow: inset 4px 4px 8px var(--shadow-dark),
+      inset -4px -4px 8px var(--shadow-light);
+    transform: translateY(1px);
+  }
+  /* Brand-filled raised element. */
+  .neu-brand {
+    background: linear-gradient(145deg, var(--brand), var(--brand-dark));
+    color: #fff;
+    box-shadow: 5px 5px 12px var(--shadow-dark),
+      -5px -5px 12px var(--shadow-light);
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+  .neu-brand:hover {
+    filter: brightness(1.05);
+  }
+  .neu-brand:active {
+    transform: translateY(1px);
+    filter: brightness(0.97);
+  }
+}
+
+/* Subtle scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
