@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Brand } from "@/components/Brand";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Card } from "@/components/ui/Card";
@@ -43,60 +44,74 @@ const plans = [
 
 export default function Landing() {
   return (
-    <div className="mx-auto w-full max-w-6xl px-6">
-      {/* Nav */}
-      <header className="flex items-center justify-between py-6">
-        <Brand withTagline size="md" />
-        <nav className="flex items-center gap-3">
-          <ThemeToggle />
-          <Link
-            href="/login"
-            className="neu-press rounded-2xl px-5 py-3 text-sm font-semibold text-content"
-          >
-            Ingia
-          </Link>
-          <Link
-            href="/register"
-            className="neu-brand rounded-2xl px-5 py-3 text-sm font-semibold"
-          >
-            Anza Sasa
-          </Link>
-        </nav>
-      </header>
+    <>
+      {/* Hero banner — full-width world-map image with overlay */}
+      <section className="relative isolate min-h-[88vh] overflow-hidden">
+        <Image
+          src="/landimg.png"
+          alt="Mtandao wa kimataifa"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        {/* Dark gradient so text stays readable in any theme */}
+        <div className="absolute inset-0 -z-[1] bg-gradient-to-b from-[#0b1020]/80 via-[#0b1020]/65 to-[#0b1020]/95" />
 
-      {/* Hero */}
-      <section className="flex flex-col items-center py-16 text-center md:py-24">
-        <span className="mb-6 flex h-28 w-28 items-center justify-center rounded-[2rem] neu-brand text-6xl">
-          🐆
-        </span>
-        <Badge tone="brand" className="mb-5">
-          Haraka · Nguvu · Imara
-        </Badge>
-        <h1 className="max-w-3xl text-4xl font-extrabold leading-tight text-content md:text-6xl">
-          Uza <span className="text-brand">WiFi</span> kwa wateja wako,
-          pata pesa kila dakika
-        </h1>
-        <p className="mt-6 max-w-xl text-base text-muted md:text-lg">
-          HotspotX ni mfumo wa kusimamia hotspot za WiFi kwa hoteli, migahawa
-          na hospitali Tanzania. Wateja hulipa kwa simu au vocha, internet
-          hufunguka papo hapo.
-        </p>
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/register"
-            className="neu-brand rounded-2xl px-8 py-4 text-base font-semibold"
-          >
-            Anza Bure 🚀
-          </Link>
-          <Link
-            href="/login"
-            className="neu-press rounded-2xl px-8 py-4 text-base font-semibold text-content"
-          >
-            Ingia kwenye Akaunti
-          </Link>
+        <div className="mx-auto flex min-h-[88vh] w-full max-w-6xl flex-col px-6">
+          {/* Nav */}
+          <header className="flex items-center justify-between py-6">
+            <Brand withTagline size="md" light />
+            <nav className="flex items-center gap-3">
+              <ThemeToggle />
+              <Link
+                href="/login"
+                className="rounded-2xl border border-white/30 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
+              >
+                Ingia
+              </Link>
+              <Link
+                href="/register"
+                className="neu-brand rounded-2xl px-5 py-3 text-sm font-semibold"
+              >
+                Anza Sasa
+              </Link>
+            </nav>
+          </header>
+
+          {/* Hero content */}
+          <div className="flex flex-1 flex-col items-center justify-center py-16 text-center">
+            <Badge tone="brand" className="mb-5">
+              Haraka · Nguvu · Imara
+            </Badge>
+            <h1 className="max-w-3xl text-4xl font-extrabold leading-tight text-white drop-shadow-lg md:text-6xl">
+              Uza <span className="text-brand">WiFi</span> kwa wateja wako,
+              pata pesa kila dakika
+            </h1>
+            <p className="mt-6 max-w-xl text-base text-white/80 md:text-lg">
+              HotspotX ni mfumo wa kusimamia hotspot za WiFi kwa hoteli,
+              migahawa na hospitali Tanzania. Wateja hulipa kwa simu au vocha,
+              internet hufunguka papo hapo.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+              <Link
+                href="/register"
+                className="neu-brand rounded-2xl px-8 py-4 text-base font-semibold"
+              >
+                Anza Bure 🚀
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-2xl border border-white/40 px-8 py-4 text-base font-semibold text-white hover:bg-white/10"
+              >
+                Ingia kwenye Akaunti
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
+      <div className="mx-auto w-full max-w-6xl px-6">
       {/* Features */}
       <section className="py-12">
         <h2 className="text-center text-3xl font-bold text-content">
@@ -191,6 +206,7 @@ export default function Landing() {
         <Brand size="sm" />
         <p>© {new Date().getFullYear()} HotspotX · Haraka · Nguvu · Imara</p>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
