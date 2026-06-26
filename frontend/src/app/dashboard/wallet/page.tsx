@@ -7,11 +7,12 @@ import { useToast } from "@/components/ui/Toast";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { MethodDonut, type DonutSegment } from "@/components/dashboard/MethodDonut";
+import { PayoutAccounts, payoutLabel } from "@/components/dashboard/PayoutAccounts";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Icon } from "@/components/ui/Icon";
-import { Input } from "@/components/ui/Input";
+import { Input, Select } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
 import { formatTZS, formatDateTime } from "@/lib/format";
@@ -21,6 +22,7 @@ import {
   type Wallet,
   type Analytics,
   type Transaction,
+  type PayoutAccount,
 } from "@/lib/types";
 
 export default function WalletPage() {
@@ -28,12 +30,21 @@ export default function WalletPage() {
   const wallet = useFetch<{ wallet: Wallet }>("/wallet/me");
   const analytics = useFetch<{ analytics: Analytics }>("/wallet/analytics");
   const txns = useFetch<{ transactions: Transaction[] }>("/wallet/transactions?limit=50");
+  const payouts = useFetch<{ accounts: PayoutAccount[] }>("/payouts");
 
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState(0);
+  const [accountId, setAccountId] = useState("");
   const [busy, setBusy] = useState(false);
 
   const w = wallet.data?.wallet;
+  const accounts = payouts.data?.accounts ?? [];
+
+  function openWithdraw() {
+    const def = accounts.find((a) => a.isDefault) ?? accounts[0];
+    setAccountId(def?.id ?? "");
+    setOpen(true);
+  }
   const byMethod = analytics.data?.analytics.byMethod ?? [];
   const segments: DonutSegment[] = byMethod.map((m) => ({
     label: methodLabels[m.method],
@@ -44,10 +55,20 @@ export default function WalletPage() {
 
   async function onWithdraw(e: FormEvent) {
     e.preventDefault();
+    if (!accountId) {
+      toast.error("Chagua akaunti ya kupokea pesa");
+      return;
+    }
     setBusy(true);
     try {
-      await api.post("/wallet/withdraw", { amount: Number(amount) });
-      toast.success(`Ombi la kutoa ${formatTZS(Number(amount))} limepokelewa`);
+      await api.post("/wallet/withdraw", {
+        amount: Number(amount),
+        payoutAccountId: accountId,
+      });
+      const acc = accounts.find((a) => a.id === accountId);
+      toast.success(
+        `Ombi la kutoa ${formatTZS(Number(amount))}${acc ? ` kwenda ${payoutLabel(acc)}` : ""} limepokelewa`,
+      );
       setOpen(false);
       setAmount(0);
       void wallet.refetch();
@@ -65,7 +86,7 @@ export default function WalletPage() {
         title="Pochi"
         subtitle="Salio na historia ya mapato"
         actions={
-          <Button onClick={() => setOpen(true)} disabled={!w || w.balance <= 0}>
+          <Button onClick={openWithdraw} disabled={!w || w.balance <= 0}>
             <Icon name="cash-coin" /> Toa Pesa
           </Button>
         }
@@ -81,6 +102,10 @@ export default function WalletPage() {
             <StatCard label="Salio lililopo" value={formatTZS(w?.balance ?? 0)} icon="wallet2" tone="earn" />
             <StatCard label="Jumla ya mapato" value={formatTZS(w?.totalEarned ?? 0)} icon="graph-up-arrow" tone="brand" />
             <StatCard label="Imetolewa" value={formatTZS(w?.totalWithdrawn ?? 0)} icon="cash-stack" tone="info" />
+          </div>
+
+          <div className="mt-4">
+            <PayoutAccounts accounts={accounts} onChanged={() => void payouts.refetch()} />
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -160,6 +185,26 @@ export default function WalletPage() {
             placeholder="0"
             required
           />
+          {accounts.length === 0 ? (
+            <p className="flex items-center gap-2 rounded-2xl bg-amber-500/10 px-4 py-3 text-sm text-amber-600 dark:text-amber-400">
+              <Icon name="exclamation-triangle" />
+              Ongeza akaunti ya malipo kwanza ili uweze kutoa pesa.
+            </p>
+          ) : (
+            <Select
+              label="Toa kwenda"
+              value={accountId}
+              onChange={(e) => setAccountId(e.target.value)}
+              required
+            >
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {(a.label ? `${a.label} — ` : "") + payoutLabel(a)}
+                  {a.isDefault ? " (default)" : ""}
+                </option>
+              ))}
+            </Select>
+          )}
         </form>
       </Modal>
     </>

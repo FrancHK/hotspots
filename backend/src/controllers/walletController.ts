@@ -163,11 +163,21 @@ export const getTransactions = asyncHandler(
 // Records a withdrawal: decrements balance, increments totalWithdrawn.
 const withdrawSchema = z.object({
   amount: z.number().int().positive("Amount must be greater than zero"),
+  payoutAccountId: z.string().uuid().optional(),
 });
 
 export const withdraw = asyncHandler(async (req: Request, res: Response) => {
   const operatorId = req.auth!.id;
-  const { amount } = validateBody(withdrawSchema, req.body);
+  const { amount, payoutAccountId } = validateBody(withdrawSchema, req.body);
+
+  // If a destination account is supplied, it must belong to this operator.
+  if (payoutAccountId) {
+    const account = await prisma.payoutAccount.findFirst({
+      where: { id: payoutAccountId, operatorId },
+      select: { id: true },
+    });
+    if (!account) throw new AppError(404, "Payout account not found");
+  }
 
   const wallet = await prisma.wallet.findUnique({ where: { operatorId } });
   if (!wallet) throw new AppError(404, "Wallet not found");
