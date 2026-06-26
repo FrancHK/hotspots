@@ -102,6 +102,22 @@ export interface PortalSettings {
   template: number;
 }
 
+export type PayoutType = "mobile" | "bank";
+export type MobileProvider = "mpesa" | "tigopesa" | "airtel";
+
+export interface PayoutAccount {
+  id: string;
+  type: PayoutType;
+  label?: string | null;
+  provider?: MobileProvider | null;
+  phone?: string | null;
+  bankName?: string | null;
+  accountName?: string | null;
+  accountNumber?: string | null;
+  isDefault: boolean;
+  createdAt: string;
+}
+
 export interface NotificationItem {
   id: string;
   title: string;
@@ -112,12 +128,125 @@ export interface NotificationItem {
   createdAt: string;
 }
 
+// ── Admin (super admin) shapes ───────────────────────────
+
+// An operator row in the admin list — extends the base operator with
+// the wallet snapshot and relation counts the admin endpoints attach.
+export interface AdminOperator extends Operator {
+  commissionRate?: number;
+  voucherCommission?: number;
+  wallet?: { balance: number; totalEarned: number } | null;
+  _count?: {
+    sites: number;
+    accessPoints: number;
+    packages: number;
+    vouchers?: number;
+    transactions?: number;
+  };
+}
+
+// Full operator detail (GET /api/operators/:id) used in the detail modal.
+export interface AdminOperatorDetail extends AdminOperator {
+  wallet?: {
+    balance: number;
+    totalEarned: number;
+    totalWithdrawn: number;
+  } | null;
+  sites?: Array<{ id: string; name: string; city: string | null; siteId: string }>;
+  accessPoints?: Array<{
+    id: string;
+    name: string;
+    macAddress: string;
+    status: "online" | "offline";
+    deviceType: DeviceType;
+  }>;
+  packages?: Array<{ id: string; name: string; price: number; status: string }>;
+}
+
+export interface CommissionStats {
+  totals: {
+    totalRevenue: number;
+    totalAdminCommission: number;
+    totalOperatorEarnings: number;
+    transactionCount: number;
+  };
+  byMethod: Array<{
+    method: PaymentMethod;
+    revenue: number;
+    adminCommission: number;
+    operatorEarnings: number;
+    count: number;
+  }>;
+  byOperator: Array<{
+    operatorId: string;
+    publicId: string | null;
+    businessName: string | null;
+    revenue: number;
+    adminCommission: number;
+    operatorEarnings: number;
+    count: number;
+  }>;
+  operatorsByStatus: Partial<Record<"pending" | "active" | "blocked", number>>;
+}
+
+export interface AdminTransaction {
+  id: string;
+  amount: number;
+  method: PaymentMethod;
+  adminCommission: number;
+  operatorEarning: number;
+  clientMac?: string | null;
+  apMac?: string | null;
+  duration?: number | null;
+  status: TxStatus;
+  reference?: string | null;
+  createdAt: string;
+  operatorId: string;
+  operatorPublicId: string;
+  operatorName: string;
+}
+
+export interface AdminAccessPoint {
+  id: string;
+  name: string;
+  macAddress: string;
+  ipAddress?: string | null;
+  ssid?: string | null;
+  model?: string | null;
+  status: "online" | "offline";
+  deviceType: DeviceType;
+  operatorPublicId: string;
+  operatorName: string;
+  siteName?: string | null;
+  siteCity?: string | null;
+  createdAt: string;
+}
+
+export interface AdminNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: "info" | "success" | "warning" | "error";
+  target: "operator" | "broadcast";
+  readCount: number;
+  operatorId: string | null;
+  operator?: { operatorId: string; businessName: string } | null;
+  createdAt: string;
+}
+
 // Swahili display labels for payment methods.
 export const methodLabels: Record<PaymentMethod, string> = {
   mpesa: "M-Pesa",
   tigopesa: "Tigo Pesa",
   airtel: "Airtel Money",
   voucher: "Vocha",
+};
+
+// Swahili display labels for package tiers.
+export const packageLabels: Record<"starter" | "basic" | "pro", string> = {
+  starter: "Starter",
+  basic: "Basic",
+  pro: "Pro",
 };
 
 // Brand-aligned colours for the method donut.
