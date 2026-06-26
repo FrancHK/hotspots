@@ -28,7 +28,8 @@ export default function LoginPage() {
       try {
         const res = await api.post("/auth/operator/login", { email, password });
         setSession(res.data.token, "operator", res.data.operator);
-        router.push("/dashboard");
+        // Send operators who haven't set up their first site to onboarding.
+        router.push(res.data.operator.onboardingComplete ? "/dashboard" : "/onboarding");
         return;
       } catch (opErr) {
         // 401 = no such operator → maybe it's an admin. Other errors (e.g. 403

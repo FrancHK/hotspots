@@ -8,6 +8,8 @@ import walletRoutes from "./walletRoutes.js";
 import paymentsRoutes from "./paymentsRoutes.js";
 import notificationRoutes from "./notificationRoutes.js";
 import portalSettingsRoutes from "./portalSettingsRoutes.js";
+import payoutRoutes from "./payoutRoutes.js";
+import onboardingRoutes from "./onboardingRoutes.js";
 
 const router = Router();
 
@@ -20,7 +22,7 @@ router.use("/wallet", walletRoutes);
 router.use("/payments", paymentsRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/portal-settings", portalSettingsRoutes);
-
-// Future route groups (onboarding) mount here.
+router.use("/payouts", payoutRoutes);
+router.use("/onboarding", onboardingRoutes);
 
 export default router;

@@ -73,9 +73,9 @@ export const operatorLogin = asyncHandler(async (req: Request, res: Response) =>
 });
 
 // ── POST /api/auth/operator/register ─────────────────────
-// Creates a PENDING operator (admin must approve), generates the public
-// HSX-YYYY-XXXX id, and provisions a wallet + default portal settings.
-// MikroTik operators have no subscription and are always treated as `pro`.
+// Creates an ACTIVE operator and logs them straight in (no admin approval),
+// generates the public HSX-YYYY-XXXX id, and provisions a wallet + default
+// portal settings. MikroTik operators have no subscription (always `pro`).
 export const operatorRegister = asyncHandler(
   async (req: Request, res: Response) => {
     const data = validateBody(registerSchema, req.body);
@@ -102,7 +102,7 @@ export const operatorRegister = asyncHandler(
         deviceType: data.deviceType,
         package: isMikrotik ? "pro" : data.package,
         noSubscription: isMikrotik,
-        status: "pending",
+        status: "active",
         operatorId: operatorPublicId,
         wallet: { create: {} },
         portalSettings: {
@@ -119,13 +119,17 @@ export const operatorRegister = asyncHandler(
         deviceType: true,
         package: true,
         noSubscription: true,
+        onboardingComplete: true,
       },
     });
 
+    // Log the new operator straight in.
+    const token = signToken({ sub: operator.id, role: "operator" });
+
     res.status(201).json({
       success: true,
-      message:
-        "Registration successful. Your account is pending admin approval.",
+      message: "Registration successful. Welcome to HotspotX!",
+      token,
       operator,
     });
   },

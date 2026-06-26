@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/cn";
 import { api, apiError } from "@/lib/api";
+import { setSession } from "@/lib/auth";
 
 type DeviceType = "omada" | "mikrotik";
 type Tier = "starter" | "basic" | "pro";
@@ -34,6 +36,7 @@ const tiers: { id: Tier; name: string; price: string; aps: string }[] = [
 ];
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormData>({
     name: "",
@@ -48,7 +51,6 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
 
   const set = (patch: Partial<FormData>) =>
     setData((d) => ({ ...d, ...patch }));
@@ -81,7 +83,7 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
     try {
-      await api.post("/auth/operator/register", {
+      const res = await api.post("/auth/operator/register", {
         name: data.name,
         businessName: data.businessName,
         email: data.email,
@@ -92,34 +94,14 @@ export default function RegisterPage() {
         deviceType: data.deviceType,
         package: isMikrotik ? "pro" : data.package,
       });
-      setDone(true);
+      // Registration logs the operator straight in — no admin approval —
+      // then sends them to onboarding to set up their first site.
+      setSession(res.data.token, "operator", res.data.operator);
+      router.push("/onboarding");
     } catch (err) {
       setError(apiError(err, "Imeshindikana kujisajili"));
-    } finally {
       setLoading(false);
     }
-  }
-
-  if (done) {
-    return (
-      <AuthShell title="Ombi limepokelewa!" subtitle="">
-        <Card className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full neu-brand text-3xl">
-            ✓
-          </div>
-          <p className="text-content">
-            Akaunti yako imeundwa na inasubiri <strong>idhini ya admin</strong>.
-            Utaweza kuingia mara baada ya kuidhinishwa.
-          </p>
-          <Link
-            href="/login"
-            className="neu-brand mt-6 inline-block rounded-2xl px-7 py-3 text-sm font-semibold"
-          >
-            Nenda kuingia
-          </Link>
-        </Card>
-      </AuthShell>
-    );
   }
 
   return (
@@ -247,7 +229,7 @@ export default function RegisterPage() {
               </div>
             ))}
             <div className="flex items-center gap-2 pt-1">
-              <Badge tone="warning">Itasubiri idhini ya admin</Badge>
+              <Badge tone="success">Utaingia moja kwa moja baada ya kujisajili</Badge>
             </div>
           </div>
         )}

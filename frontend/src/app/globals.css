@@ -142,6 +142,14 @@ body {
     0%, 100% { opacity: 0.25; }
     50% { opacity: 0.6; }
   }
+  /* Smooth transition between onboarding wizard steps. */
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  .step-in {
+    animation: stepIn 0.35s ease-out both;
+  }
   .arc-pulse {
     animation: arcPulse 4s ease-in-out infinite;
   }
